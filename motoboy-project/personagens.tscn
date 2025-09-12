@@ -1,4 +1,4 @@
-[gd_scene load_steps=41 format=3 uid="uid://bu4tois6ahmb1"]
+[gd_scene load_steps=45 format=3 uid="uid://bu4tois6ahmb1"]
 
 [ext_resource type="Texture2D" uid="uid://dwuole3yliwjl" path="res://walk/boi0.png" id="1_21d44"]
 [ext_resource type="Texture2D" uid="uid://se1ydmaf626k" path="res://run/sprite_17.png" id="1_mrc2g"]
@@ -16,8 +16,12 @@
 [ext_resource type="Texture2D" uid="uid://c7px0snxhpi42" path="res://walk/boi7.png" id="8_8ou23"]
 [ext_resource type="Texture2D" uid="uid://b15bvyvub8el8" path="res://idle/sprite_08.png" id="9_8ou23"]
 [ext_resource type="Texture2D" uid="uid://brvysgatfs7in" path="res://idle/sprite_09.png" id="10_m7lvm"]
+[ext_resource type="Texture2D" uid="uid://ca82vvtsds0yi" path="res://jump_animation/sprite_25.png" id="11_7xf55"]
 [ext_resource type="Texture2D" uid="uid://bp8ypgbyb2ijm" path="res://idle/sprite_10.png" id="11_hedpl"]
+[ext_resource type="Texture2D" uid="uid://d1wukxxiyxpp8" path="res://jump_animation/sprite_23.png" id="11_yctn6"]
 [ext_resource type="Texture2D" uid="uid://dfnk3q58o42qa" path="res://idle/sprite_11.png" id="12_3etq7"]
+[ext_resource type="Texture2D" uid="uid://cw3nrjpsvx6c2" path="res://jump_animation/sprite_26.png" id="12_86t5f"]
+[ext_resource type="Texture2D" uid="uid://c3bbkavskem06" path="res://jump_animation/sprite_24.png" id="12_l5jm7"]
 [ext_resource type="Texture2D" uid="uid://dfs03doxoa1h8" path="res://idle/sprite_12.png" id="13_npm7f"]
 [ext_resource type="Texture2D" uid="uid://cjpppv3c7y7bp" path="res://idle/sprite_13.png" id="14_rhvux"]
 [ext_resource type="Texture2D" uid="uid://b3htrtsjt4v5n" path="res://idle/sprite_14.png" id="15_mrc2g"]
@@ -52,6 +56,23 @@ func _on_area_2d_body_entered(body: Node2D) -> void:
 	pass # Replace with function body.
 "
 
+[sub_resource type="GDScript" id="GDScript_7waos"]
+script/source = "extends CanvasLayer
+
+
+@onready var label := get_node(\"Label\")
+
+func _input(event: InputEvent):
+	if event.is_action_pressed(\"ui_end\"):
+		get_tree().paused = !get_tree().paused
+		label.visible = get_tree().paused
+		
+		
+
+func _on_button_pressed() :
+	get_tree().quit()
+"
+
 [sub_resource type="GDScript" id="GDScript_b3p1w"]
 script/source = "extends CharacterBody2D
 
@@ -63,53 +84,78 @@ var pulo_speed:float = 200
 var time_apice_pulo:float = 0.3
 var velocidade_maxima_x:float = 100
 var velocidade_maxima_y:float = 700
-  
+
 func _ready():
 	$AnimatedSprite2D.play(\"idle\")
-	pulo_speed = (jump_height*2)/time_apice_pulo
-	gravidade = (jump_height*2)/pow(time_apice_pulo,2)
+	pulo_speed = (jump_height*2) / time_apice_pulo
+	gravidade = (jump_height*2) / pow(time_apice_pulo, 2)
 
 func _physics_process(delta):
 	velocity.y += gravidade * delta
 
-	
 	if Input.is_action_pressed(\"ui_left\"):
 		$AnimatedSprite2D.flip_h = true
 		if Input.is_action_pressed(\"run\"):
 			velocity.x = -velocidade_maxima_x * 2
-			$AnimatedSprite2D.play(\"animation_run\")
 		else:
 			velocity.x = max(velocity.x - aceleracao * delta, -velocidade_maxima_x)
-			$AnimatedSprite2D.play(\"animation_walk\")
 
-	
 	elif Input.is_action_pressed(\"ui_right\"):
 		$AnimatedSprite2D.flip_h = false
 		if Input.is_action_pressed(\"run\"):
 			velocity.x = velocidade_maxima_x * 2
-			$AnimatedSprite2D.play(\"animation_run\")
 		else:
 			velocity.x = min(velocity.x + aceleracao * delta, velocidade_maxima_x)
-			$AnimatedSprite2D.play(\"animation_walk\")
 
-	
 	else:
 		if velocity.x > 0:
 			velocity.x = max(velocity.x - desaceleracao * delta, 0)
 		elif velocity.x < 0:
 			velocity.x = min(velocity.x + desaceleracao * delta, 0)
-		$AnimatedSprite2D.play(\"idle\")
 
-	
 	if Input.is_action_just_pressed(\"ui_jump\") and is_on_floor():
-		$AnimatedSprite2D.play(\"idle\")
 		velocity.y = -pulo_speed
 
 	move_and_slide()
+	
+	if not is_on_floor(): 
+		if velocity.y < 0: 
+			$AnimatedSprite2D.play(\"animation_jump\")
+		else:
+			$AnimatedSprite2D.play(\"animation_fall\")
+	else:
+		if velocity.x == 0:
+			$AnimatedSprite2D.play(\"idle\")
+		elif abs(velocity.x) > velocidade_maxima_x: 
+			$AnimatedSprite2D.play(\"animation_run\")
+		else:
+			$AnimatedSprite2D.play(\"animation_walk\")
 "
 
 [sub_resource type="SpriteFrames" id="SpriteFrames_46pr7"]
 animations = [{
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("11_7xf55")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_86t5f")
+}],
+"loop": true,
+"name": &"animation_fall",
+"speed": 5.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": ExtResource("11_yctn6")
+}, {
+"duration": 1.0,
+"texture": ExtResource("12_l5jm7")
+}],
+"loop": true,
+"name": &"animation_jump",
+"speed": 3.0
+}, {
 "frames": [{
 "duration": 1.0,
 "texture": ExtResource("1_mrc2g")
@@ -193,24 +239,7 @@ animations = [{
 }]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_yoix2"]
-size = Vector2(26, 34.0621)
-
-[sub_resource type="GDScript" id="GDScript_7waos"]
-script/source = "extends CanvasLayer
-
-
-@onready var label := get_node(\"Label\")
-
-func _input(event: InputEvent):
-	if event.is_action_pressed(\"ui_end\"):
-		get_tree().paused = !get_tree().paused
-		label.visible = get_tree().paused
-		
-		
-
-func _on_button_pressed() :
-	get_tree().quit()
-"
+size = Vector2(20, 29.031)
 
 [sub_resource type="TileSetAtlasSource" id="TileSetAtlasSource_p405d"]
 texture = ExtResource("23_mrc2g")
@@ -670,25 +699,6 @@ sources/0 = SubResource("TileSetAtlasSource_p405d")
 [node name="Node2D" type="Node2D"]
 script = SubResource("GDScript_s3ttr")
 
-[node name="CharacterBody2D" type="CharacterBody2D" parent="."]
-position = Vector2(-339, -314)
-script = SubResource("GDScript_b3p1w")
-
-[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CharacterBody2D"]
-position = Vector2(501, 525)
-scale = Vector2(1.18824, 1.0863)
-sprite_frames = SubResource("SpriteFrames_46pr7")
-animation = &"animation_walk"
-frame_progress = 0.314914
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D"]
-position = Vector2(499, 520)
-shape = SubResource("RectangleShape2D_yoix2")
-
-[node name="Camera2D" type="Camera2D" parent="CharacterBody2D"]
-position = Vector2(534, 496)
-zoom = Vector2(3, 3)
-
 [node name="CanvasLayer" type="CanvasLayer" parent="."]
 process_mode = 3
 script = SubResource("GDScript_7waos")
@@ -729,6 +739,8 @@ position = Vector2(51, 156)
 texture = ExtResource("40_fjv3o")
 
 [node name="1Stone" type="Sprite2D" parent="."]
+light_mask = 2
+visibility_layer = 2
 position = Vector2(864, 34)
 texture = ExtResource("38_5g0dc")
 
@@ -737,7 +749,7 @@ position = Vector2(1027, 221)
 texture = ExtResource("39_054te")
 
 [node name="2Grass" type="Sprite2D" parent="."]
-position = Vector2(1071, 262)
+position = Vector2(1070, 264)
 texture = ExtResource("41_0yxoc")
 
 [node name="2Grass2" type="Sprite2D" parent="."]
@@ -775,6 +787,25 @@ texture = ExtResource("31_go73w")
 [node name="2Willow" type="Sprite2D" parent="."]
 position = Vector2(801, 188)
 texture = ExtResource("26_v0hbj")
+
+[node name="CharacterBody2D" type="CharacterBody2D" parent="."]
+position = Vector2(-339, -314)
+script = SubResource("GDScript_b3p1w")
+
+[node name="AnimatedSprite2D" type="AnimatedSprite2D" parent="CharacterBody2D"]
+position = Vector2(501, 525)
+scale = Vector2(1.18824, 1.0863)
+sprite_frames = SubResource("SpriteFrames_46pr7")
+animation = &"animation_fall"
+frame_progress = 0.32437
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="CharacterBody2D"]
+position = Vector2(500, 522.516)
+shape = SubResource("RectangleShape2D_yoix2")
+
+[node name="Camera2D" type="Camera2D" parent="CharacterBody2D"]
+position = Vector2(534, 496)
+zoom = Vector2(3, 3)
 
 [node name="TileMap" type="TileMap" parent="."]
 position = Vector2(0, 95)
